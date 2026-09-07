@@ -58,6 +58,7 @@ export default function Generate() {
     try {
       const result = await generationService.create({
         templateId: template._id,
+        mode: 'bulk',
         dataFileId: dataFile._id,
         outputFormat,
         requestScope: 'all',

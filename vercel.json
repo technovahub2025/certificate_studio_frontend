@@ -1,15 +1,15 @@
 {
   "rewrites": [
     {
-      "source": "/test_certificates/assets/:path*",
+      "source": "/test_certificate/assets/:path*",
       "destination": "/assets/:path*"
     },
     {
-      "source": "/test_certificates",
+      "source": "/test_certificate",
       "destination": "/index.html"
     },
     {
-      "source": "/test_certificates/:path*",
+      "source": "/test_certificate/:path*",
       "destination": "/index.html"
     }
   ]

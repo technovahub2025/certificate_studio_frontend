@@ -8,6 +8,7 @@ export default function EditorToolbar({
   onSave,
   onGenerate,
   canGenerate,
+  mode = 'single',
   onTogglePreview,
   onUndo,
   onRedo,
@@ -15,6 +16,9 @@ export default function EditorToolbar({
   onZoomOut,
   onResetZoom,
 }) {
+  const generateTitle = mode === 'single'
+    ? (canGenerate ? 'Generate one certificate' : 'Open a saved template first')
+    : (canGenerate ? 'Save and continue to generation' : 'Select a saved template and data file first')
   return (
     <div className="editor-toolbar">
       <button type="button" onClick={onUndo} title="Undo"><RotateCcw size={16} /></button>
@@ -27,7 +31,7 @@ export default function EditorToolbar({
         variant="secondary"
         onClick={onGenerate}
         disabled={!canGenerate}
-        title={canGenerate ? 'Save and continue to generation' : 'Select a saved template and data file first'}
+        title={generateTitle}
       >
         <Wand2 size={16} />{generateStatus || 'Generate'}
       </Button>

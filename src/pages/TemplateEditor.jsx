@@ -6,7 +6,7 @@ import EditorToolbar from '../components/editor/EditorToolbar'
 import PropertiesPanel from '../components/editor/PropertiesPanel'
 import ToolPanel from '../components/editor/ToolPanel'
 import useCertificateEditor from '../hooks/useCertificateEditor'
-import { dataFileService, templateService } from '../services/api'
+import { dataFileService, generationService, templateService } from '../services/api'
 
 const fallbackDesign = {
   width: 1600,
@@ -17,6 +17,13 @@ const fallbackDesign = {
 
 const SELECTED_TEMPLATE_KEY = 'certificate_studio_selected_template_id'
 const SELECTED_DATA_FILE_KEY = 'certificate_studio_selected_data_file_id'
+
+const OUTPUT_FORMATS = [
+  { value: 'pdf', label: 'PDF' },
+  { value: 'png', label: 'PNG' },
+  { value: 'jpg', label: 'JPG' },
+  { value: 'jpeg', label: 'JPEG' },
+]
 
 export default function TemplateEditor() {
   const { id } = useParams()
@@ -33,6 +40,8 @@ export default function TemplateEditor() {
   const [generateStatus, setGenerateStatus] = useState('')
   const [error, setError] = useState('')
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [generationMode, setGenerationMode] = useState('single')
+  const [outputFormat, setOutputFormat] = useState('pdf')
 
   const selectedRow = previewData.rows[selectedRowIndex] || null
   const editor = useCertificateEditor({ initialDesign, previewRow: selectedRow, fieldMapping, previewMode })
@@ -68,6 +77,7 @@ export default function TemplateEditor() {
           setTemplate(loaded)
           setInitialDesign(loaded?.design?.width ? loaded.design : fallbackDesign)
           setFieldMapping(loaded?.fieldMapping || {})
+          setGenerationMode(loaded?.mode || 'single')
         }
       } catch (loadError) {
         if (loadError.response?.status === 401) {
@@ -118,6 +128,12 @@ export default function TemplateEditor() {
 
   const mergedFields = useMemo(() => editor.templateFields, [editor.templateFields])
 
+  const canGenerate = useMemo(() => {
+    const hasValidCertificate = Boolean(id)
+    if (generationMode === 'single') return hasValidCertificate
+    return Boolean(id && selectedDataFileId)
+  }, [generationMode, id, selectedDataFileId])
+
   async function handleSave() {
     if (!id) {
       setSaveStatus('Open a saved template first')
@@ -129,7 +145,7 @@ export default function TemplateEditor() {
     try {
       const design = editor.serialize()
       const [templateResult] = await Promise.all([
-        templateService.update(id, { design }),
+        templateService.update(id, { design, mode: generationMode }),
         templateService.saveMapping(id, fieldMapping),
       ])
       setTemplate(templateResult.data?.data)
@@ -146,7 +162,7 @@ export default function TemplateEditor() {
     if (!id) throw new Error('Open a saved template first')
     const design = editor.serialize()
     const [templateResult] = await Promise.all([
-      templateService.update(id, { design }),
+      templateService.update(id, { design, mode: generationMode }),
       templateService.saveMapping(id, fieldMapping),
     ])
     setTemplate(templateResult.data?.data)
@@ -158,7 +174,7 @@ export default function TemplateEditor() {
       setError('Open a saved template before generating.')
       return
     }
-    if (!selectedDataFileId) {
+    if (generationMode === 'bulk' && !selectedDataFileId) {
       setError('Select a data file before generating.')
       return
     }
@@ -169,9 +185,25 @@ export default function TemplateEditor() {
     try {
       await saveCurrentTemplate()
       localStorage.setItem(SELECTED_TEMPLATE_KEY, id)
-      localStorage.setItem(SELECTED_DATA_FILE_KEY, selectedDataFileId)
+      if (generationMode === 'bulk' && selectedDataFileId) {
+        localStorage.setItem(SELECTED_DATA_FILE_KEY, selectedDataFileId)
+      }
       setSaveStatus('Saved')
-      navigate('/generate')
+
+      if (generationMode === 'single') {
+        setGenerateStatus('Generating...')
+        const result = await generationService.create({
+          templateId: id,
+          mode: 'single',
+          outputFormat,
+          design: editor.serialize(),
+        })
+        const generation = result.data?.data
+        if (generation?._id) navigate(`/generate/result/${generation._id}`)
+      } else {
+        setGenerateStatus('')
+        navigate('/generate')
+      }
     } catch (generateError) {
       setError(generateError.response?.data?.message || generateError.message || 'Unable to prepare generation.')
       setSaveStatus('Save failed')
@@ -189,23 +221,59 @@ export default function TemplateEditor() {
           <h1>{title}</h1>
           {error && <p className="form-message">{error}</p>}
         </div>
-        <EditorToolbar
-          previewMode={previewMode}
-          saveStatus={saveStatus}
-          generateStatus={generateStatus}
-          onSave={handleSave}
-          onGenerate={handleGenerate}
-          canGenerate={Boolean(id && selectedDataFileId)}
-          onTogglePreview={() => setPreviewMode((value) => !value)}
-          onUndo={editor.undo}
-          onRedo={editor.redo}
-          onZoomIn={() => editor.setZoom((value) => Math.min(value + 0.1, 1.4))}
-          onZoomOut={() => editor.setZoom((value) => Math.max(value - 0.1, 0.25))}
-          onResetZoom={() => editor.setZoom(0.45)}
-        />
+        <div className="generation-mode-bar">
+          <div className="generation-mode-label">Certificate Generation</div>
+          <div className="mode-segmented">
+            <button
+              type="button"
+              className={generationMode === 'single' ? 'active' : ''}
+              onClick={() => setGenerationMode('single')}
+            >
+              Single Certificate
+            </button>
+            <button
+              type="button"
+              className={generationMode === 'bulk' ? 'active' : ''}
+              onClick={() => setGenerationMode('bulk')}
+            >
+              Bulk Certificates
+            </button>
+          </div>
+          <p className="mode-hint">
+            {generationMode === 'single'
+              ? 'Edit and generate one certificate manually.'
+              : 'Upload Excel/CSV and generate multiple certificates.'}
+          </p>
+          {generationMode === 'single' && (
+            <label className="download-format">
+              Format
+              <select value={outputFormat} onChange={(event) => setOutputFormat(event.target.value)}>
+                {OUTPUT_FORMATS.map((format) => (
+                  <option key={format.value} value={format.value}>{format.label}</option>
+                ))}
+              </select>
+            </label>
+          )}
+          <EditorToolbar
+            previewMode={previewMode}
+            saveStatus={saveStatus}
+            generateStatus={generateStatus}
+            onSave={handleSave}
+            onGenerate={handleGenerate}
+            canGenerate={canGenerate}
+            mode={generationMode}
+            onTogglePreview={() => setPreviewMode((value) => !value)}
+            onUndo={editor.undo}
+            onRedo={editor.redo}
+            onZoomIn={() => editor.setZoom((value) => Math.min(value + 0.1, 1.4))}
+            onZoomOut={() => editor.setZoom((value) => Math.max(value - 0.1, 0.25))}
+            onResetZoom={() => editor.setZoom(0.45)}
+          />
+        </div>
       </header>
       <div className="editor-workspace">
         <ToolPanel
+          mode={generationMode}
           onAddElement={editor.addElement}
           onOpenDynamicField={() => setDialogOpen(true)}
           dataFiles={dataFiles}
