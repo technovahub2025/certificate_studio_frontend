@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { authService } from '../services/api'
 
-const logoUrl =
-  'https://lh3.googleusercontent.com/aida-public/AB6AXuC0Yy5Cuod8tZX-y4bWRY1LkwjpzFz-Ry_5iaCGntfzV7s33Qs2sNAMnH4Ftvnea_ndWNbidSN76OCmi8pY1WHPEQMK0KTBz58Lud5Z-fj1aEXkh1Bpp_qI7Bqc0vW4ARZletLu6CppeBIDIN4Ld9sEq4A9hiA16Bi07t0xBmVLZRlf4K7Aj6YpO49hpwVzSXAMY0HNO8855kzPMPwwYIA8FhdX9A3eklQjvMma072tjmpknfobxTb5'
+const logoUrl = 'assets/certificate-studio-logo.png'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -52,8 +51,8 @@ export default function Login() {
     <main className="cert-login-page">
       <div className="cert-login-card">
         <div className="cert-login-heading">
-          <img alt="CertiFlow Logo" className="cert-login-logo" src={logoUrl} />
-          <h1>CertiFlow</h1>
+          <img alt="Certificate Studio logo" className="cert-login-logo" src={logoUrl} />
+          <h1>Certificate Studio</h1>
           <p>{mode === 'register' ? 'Create your workspace account' : 'Certificate Automation Platform'}</p>
         </div>
 

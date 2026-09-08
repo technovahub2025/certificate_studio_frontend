@@ -22,13 +22,13 @@ const navItems = [
 export default function Sidebar() {
   return (
     <aside className="sidebar">
-      <NavLink className="brand" to="/dashboard">
-        <span className="brand-mark">CS</span>
-        <span>
-          <strong>Certificate Studio</strong>
-          <small>Generation workspace</small>
-        </span>
-      </NavLink>
+        <NavLink className="brand" to="/dashboard">
+          <img className="brand-mark" alt="Certificate Studio logo" src="assets/certificate-studio-logo.png" />
+          <span>
+            <strong>Certificate Studio</strong>
+            <small>Generation workspace</small>
+          </span>
+        </NavLink>
 
       <nav className="side-nav" aria-label="Primary navigation">
         {navItems.map(({ to, label, icon: Icon }) => (
