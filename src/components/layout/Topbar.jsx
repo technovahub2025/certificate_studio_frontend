@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Bell, LogOut, Search, UserRound } from 'lucide-react'
+import { Bell, LogOut, Menu, Search, UserRound } from 'lucide-react'
 
-export default function Topbar() {
+export default function Topbar({ onMenuClick }) {
   const navigate = useNavigate()
   const [hasToken, setHasToken] = useState(() => Boolean(localStorage.getItem('certificate_studio_token')))
 
@@ -27,6 +27,15 @@ export default function Topbar() {
 
   return (
     <header className="topbar">
+      <button
+        type="button"
+        className="hamburger"
+        aria-label="Open navigation"
+        onClick={onMenuClick}
+      >
+        <Menu size={20} />
+      </button>
+
       <label className="search-box">
         <Search size={17} />
         <input type="search" placeholder="Search templates, data files, batches" />
