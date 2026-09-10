@@ -7,23 +7,49 @@ const logoUrl = `${import.meta.env.BASE_URL}assets/certificate-studio-logo.png`
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
+
   const [mode, setMode] = useState('login')
-  const [form, setForm] = useState({ name: '', email: '', password: '', remember: false })
+  const [showPassword, setShowPassword] = useState(false)
+
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    password: '',
+    remember: false,
+  })
+
   const [errors, setErrors] = useState({})
   const [message, setMessage] = useState('')
 
   function updateField(event) {
     const { name, value, checked, type } = event.target
-    setForm((current) => ({ ...current, [name]: type === 'checkbox' ? checked : value }))
+
+    setForm((current) => ({
+      ...current,
+      [name]: type === 'checkbox' ? checked : value,
+    }))
   }
 
   async function handleSubmit(event) {
     event.preventDefault()
+
     const nextErrors = {}
 
-    if (mode === 'register' && form.name.trim().length < 2) nextErrors.name = 'Enter your name.'
-    if (!/^\S+@\S+\.\S+$/.test(form.email)) nextErrors.email = 'Enter a valid email address.'
-    if (form.password.length < 8) nextErrors.password = 'Password must be at least 8 characters.'
+    if (
+      mode === 'register' &&
+      form.name.trim().length < 2
+    ) {
+      nextErrors.name = 'Enter your name.'
+    }
+
+    if (!/^\S+@\S+\.\S+$/.test(form.email)) {
+      nextErrors.email = 'Enter a valid email address.'
+    }
+
+    if (form.password.length < 8) {
+      nextErrors.password =
+        'Password must be at least 8 characters.'
+    }
 
     setErrors(nextErrors)
     setMessage('')
@@ -31,19 +57,46 @@ export default function Login() {
     if (Object.keys(nextErrors).length) return
 
     try {
-      const response = mode === 'register'
-        ? await authService.register({ name: form.name, email: form.email, password: form.password })
-        : await authService.login({ email: form.email, password: form.password })
+      const response =
+        mode === 'register'
+          ? await authService.register({
+              name: form.name,
+              email: form.email,
+              password: form.password,
+            })
+          : await authService.login({
+              email: form.email,
+              password: form.password,
+            })
+
       const token = response.data?.data?.token
 
       if (token) {
-        localStorage.setItem('certificate_studio_token', token)
-        window.dispatchEvent(new Event('certificate-studio-auth'))
-        setMessage(mode === 'register' ? 'Account created successfully.' : 'Signed in successfully.')
-        navigate(location.state?.from || '/templates', { replace: true })
+        localStorage.setItem(
+          'certificate_studio_token',
+          token,
+        )
+
+        window.dispatchEvent(
+          new Event('certificate-studio-auth'),
+        )
+
+        setMessage(
+          mode === 'register'
+            ? 'Account created successfully.'
+            : 'Signed in successfully.',
+        )
+
+        navigate(
+          location.state?.from || '/templates',
+          { replace: true },
+        )
       }
     } catch (error) {
-      setMessage(error.response?.data?.message || 'Unable to sign in.')
+      setMessage(
+        error.response?.data?.message ||
+          'Unable to sign in.',
+      )
     }
   }
 
@@ -51,17 +104,35 @@ export default function Login() {
     <main className="cert-login-page">
       <div className="cert-login-card">
         <div className="cert-login-heading">
-          <img alt="Certificate Studio logo" className="cert-login-logo" src={logoUrl} />
+          <img
+            alt="Certificate Studio logo"
+            className="cert-login-logo"
+            src={logoUrl}
+          />
+
           <h1>Certificate Studio</h1>
-          <p>{mode === 'register' ? 'Create your workspace account' : 'Certificate Automation Platform'}</p>
+
+          <p>
+            {mode === 'register'
+              ? 'Create your workspace account'
+              : 'Certificate Automation Platform'}
+          </p>
         </div>
 
-        <form className="cert-login-form" onSubmit={handleSubmit} noValidate>
+        <form
+          className="cert-login-form"
+          onSubmit={handleSubmit}
+          noValidate
+        >
           {mode === 'register' ? (
             <div className="cert-field-group">
               <label htmlFor="name">Full Name</label>
+
               <div className="cert-input-wrap">
-                <span className="material-symbols-outlined">person</span>
+                <span className="material-symbols-outlined">
+                  person
+                </span>
+
                 <input
                   autoComplete="name"
                   id="name"
@@ -73,14 +144,23 @@ export default function Login() {
                   onChange={updateField}
                 />
               </div>
-              {errors.name ? <small className="cert-field-error">{errors.name}</small> : null}
+
+              {errors.name ? (
+                <small className="cert-field-error">
+                  {errors.name}
+                </small>
+              ) : null}
             </div>
           ) : null}
 
           <div className="cert-field-group">
             <label htmlFor="email">Email Address</label>
+
             <div className="cert-input-wrap">
-              <span className="material-symbols-outlined">mail</span>
+              <span className="material-symbols-outlined">
+                mail
+              </span>
+
               <input
                 autoComplete="email"
                 id="email"
@@ -92,25 +172,64 @@ export default function Login() {
                 onChange={updateField}
               />
             </div>
-            {errors.email ? <small className="cert-field-error">{errors.email}</small> : null}
+
+            {errors.email ? (
+              <small className="cert-field-error">
+                {errors.email}
+              </small>
+            ) : null}
           </div>
 
           <div className="cert-field-group">
             <label htmlFor="password">Password</label>
+
             <div className="cert-input-wrap">
-              <span className="material-symbols-outlined">lock</span>
+              <span className="material-symbols-outlined">
+                lock
+              </span>
+
               <input
                 autoComplete="current-password"
                 id="password"
                 name="password"
                 placeholder="••••••••"
                 required
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 value={form.password}
                 onChange={updateField}
               />
+
+              <button
+                type="button"
+                aria-label={
+                  showPassword
+                    ? 'Hide password'
+                    : 'Show password'
+                }
+                onClick={() =>
+                  setShowPassword((current) => !current)
+                }
+                style={{
+                  border: 'none',
+                  background: 'transparent',
+                  cursor: 'pointer',
+                  padding: '4px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <span className="material-symbols-outlined">
+                  {showPassword ? 'visibility_off' : 'visibility'}
+                </span>
+              </button>
             </div>
-            {errors.password ? <small className="cert-field-error">{errors.password}</small> : null}
+
+            {errors.password ? (
+              <small className="cert-field-error">
+                {errors.password}
+              </small>
+            ) : null}
           </div>
 
           <div className="cert-login-options">
@@ -122,28 +241,50 @@ export default function Login() {
                 checked={form.remember}
                 onChange={updateField}
               />
-              <label htmlFor="remember-me">Remember me</label>
+
+              <label htmlFor="remember-me">
+                Remember me
+              </label>
             </div>
 
             <a href="/login">Forgot password?</a>
           </div>
 
           <button className="cert-sign-in" type="submit">
-            {mode === 'register' ? 'Create account' : 'Sign in'}
+            {mode === 'register'
+              ? 'Create account'
+              : 'Sign in'}
           </button>
-          {message ? <p className="cert-form-message">{message}</p> : null}
+
+          {message ? (
+            <p className="cert-form-message">
+              {message}
+            </p>
+          ) : null}
         </form>
 
         <div className="cert-login-footer">
           {mode === 'register' ? (
             <p>
               Already have an account?{' '}
-              <button className="link-button" type="button" onClick={() => setMode('login')}>Sign in</button>
+              <button
+                className="link-button"
+                type="button"
+                onClick={() => setMode('login')}
+              >
+                Sign in
+              </button>
             </p>
           ) : (
             <p>
               Don't have an account?{' '}
-              <button className="link-button" type="button" onClick={() => setMode('register')}>Create account</button>
+              <button
+                className="link-button"
+                type="button"
+                onClick={() => setMode('register')}
+              >
+                Create account
+              </button>
             </p>
           )}
         </div>
