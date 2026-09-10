@@ -117,18 +117,31 @@ export default function Dashboard() {
       </section>
 
       <section className="content-grid two-col">
+        {/* Recent Templates */}
         <Card>
           <div className="section-heading">
             <h2>Recent Templates</h2>
             <Link to="/templates">View all</Link>
           </div>
 
-          <div className="template-list compact-list">
+          <div
+            className="template-list compact-list"
+            style={{
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+            }}
+          >
             {templates.slice(0, 1).map((template) => (
               <Link
                 key={template._id}
                 className="template-card-link"
                 to={`/templates/${template._id}/editor`}
+                style={{
+                  display: 'block',
+                  width: '100%',
+                  maxWidth: '100%',
+                }}
               >
                 <TemplateCard
                   template={{
@@ -155,6 +168,7 @@ export default function Dashboard() {
           </div>
         </Card>
 
+        {/* Generation History */}
         <Card>
           <div className="section-heading">
             <h2>Generation History</h2>
