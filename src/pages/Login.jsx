@@ -88,7 +88,7 @@ export default function Login() {
         )
 
         navigate(
-          location.state?.from || '/templates',
+          location.state?.from || '/dashboard',
           { replace: true },
         )
       }
