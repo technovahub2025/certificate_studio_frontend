@@ -63,14 +63,12 @@ export default function Dashboard() {
       </section>
 
       <section className="content-grid two-col">
-        <Card>
-          <div className="section-heading">
-            <h2>Recent Templates</h2>
+        <Card style={{ minWidth: 0, overflow: 'hidden' }}>`r`n          <div className="section-heading">`r`n            <h2>Recent Templates</h2>
             <Link to="/templates">View all</Link>
           </div>
-          <div className="template-list compact-list">
+          <div className="template-list compact-list" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '14px', width: '100%', minWidth: 0, overflow: 'hidden' }}>
             {templates.slice(0, 2).map((template) => (
-              <Link key={template._id} className="template-card-link" to={`/templates/${template._id}/editor`}>
+              <Link key={template._id} className="template-card-link" style={{ display: 'block', width: '100%', minWidth: 0, maxWidth: '100%', overflow: 'hidden' }} to={`/templates/${template._id}/editor`}>
                 <TemplateCard template={{
                   ...template,
                   id: template._id,
