@@ -438,20 +438,6 @@ h1, h2, h3, p { margin: 0; }
 .side-nav a.active, .side-nav a:hover { background: #1d2939; color: #ffffff; }
 
 .main-shell { min-width: 0; }
-.topbar {
-  height: 72px;
-  padding: 16px 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  background: rgba(255, 255, 255, 0.88);
-  border-bottom: 1px solid var(--line);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  backdrop-filter: blur(16px);
-}
 
 .search-box {
   width: min(520px, 100%);
