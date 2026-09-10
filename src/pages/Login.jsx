@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { authService } from '../services/api'
 
-const logoUrl = 'assets/certificate-studio-logo.png'
+const logoUrl = `${import.meta.env.BASE_URL}assets/certificate-studio-logo.png`
 
 export default function Login() {
   const navigate = useNavigate()

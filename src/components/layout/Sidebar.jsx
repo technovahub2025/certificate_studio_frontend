@@ -26,7 +26,7 @@ export default function Sidebar({ isOpen = false, onClose }) {
       <aside className={`sidebar ${isOpen ? 'sidebar-open' : ''}`}>
         <div className="sidebar-header">
           <NavLink className="brand" to="/dashboard" onClick={onClose}>
-            <img className="brand-mark" alt="Certificate Studio logo" src="assets/certificate-studio-logo.png" />
+            <img className="brand-mark" alt="Certificate Studio logo" src={`${import.meta.env.BASE_URL}assets/certificate-studio-logo.png`} />
             <span>
               <strong>Certificate Studio</strong>
               <small>Generation workspace</small>
